@@ -122,24 +122,36 @@ def test_integration():
         kb_manager = KnowledgeBaseManager()
         kb_manager.build_index(documents)
         
-        # チャットボット初期化（LLMなし）
-        with patch('rag_qa_chatbot.AutoTokenizer'), \
+        # チャットボット初期化（LLMをモック）
+        with patch('rag_qa_chatbot.AutoTokenizer') as mock_tokenizer_cls, \
              patch('rag_qa_chatbot.AutoModelForCausalLM'), \
-             patch('rag_qa_chatbot.pipeline'):
-            
+             patch('rag_qa_chatbot.pipeline') as mock_pipeline:
+
+            class DummyTokenizer:
+                eos_token_id = 0
+                pad_token = None
+                def __call__(self, *args, **kwargs):
+                    return Mock(input_ids=np.array([[1, 2, 3, 4]]))
+
+            mock_tokenizer_cls.from_pretrained.return_value = DummyTokenizer()
+
+            def gen(prompt, **kwargs):
+                return [{'generated_text': prompt + ' モック回答'}]
+
+            mock_pipeline.return_value = gen
+
             chatbot = QAChatbot(kb_manager)
-            chatbot.generator = None  # シンプル回答を使用
-            
+
             # 検索結果をモック
             kb_manager.search = Mock(return_value=["経費精算の上限は月額50,000円です。"])
-            
+
             # テスト質問
             questions = [
                 "経費精算の上限はいくらですか？",
                 "有給休暇について教えてください",
                 "存在しない情報について教えてください"
             ]
-            
+
             for question in questions:
                 print(f"📝 質問: {question}")
                 answer = chatbot.answer(question)

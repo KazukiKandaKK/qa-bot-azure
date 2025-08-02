@@ -155,13 +155,17 @@ class QAChatbot:
         
         if self.generator is None:
             return self._simple_answer(relevant_context, question)
-        
+
         try:
             prompt = self._build_prompt(relevant_context, question)
-            
+            encoded = self.tokenizer(prompt, return_tensors="pt")
+            prompt_tokens = encoded.input_ids.shape[1]
+            max_tokens = 512
+            max_new_tokens = max(1, max_tokens - prompt_tokens)
+
             response = self.generator(
                 prompt,
-                max_length=len(prompt.split()) + 100,
+                max_new_tokens=max_new_tokens,
                 num_return_sequences=1,
                 temperature=0.7
             )

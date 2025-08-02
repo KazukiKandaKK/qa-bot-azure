@@ -65,7 +65,7 @@ class TestKnowledgeBaseManager(unittest.TestCase):
         """検索結果があるケースのテスト"""
         # インデックスを構築
         mock_index = Mock()
-        mock_index.search.return_value = (np.array([[0.9, 0.8, 0.7]]), np.array([[0, 1, 2]]))
+        mock_index.search.return_value = (np.array([[0.9, 0.8]]), np.array([[0, 1]]))
         mock_faiss.IndexFlatIP.return_value = mock_index
         
         self.kb_manager.build_index(self.test_documents)
@@ -165,17 +165,33 @@ class TestIntegration(unittest.TestCase):
         
         kb_manager = KnowledgeBaseManager()
         kb_manager.build_index(documents)
-        
-        chatbot = QAChatbot(kb_manager)
-        chatbot.generator = None  # テンプレートベース回答を使用
-        
-        # 質問と回答
-        question = "経費精算について教えてください"
-        answer = chatbot.answer(question)
-        
-        # 結果検証
-        self.assertIsInstance(answer, str)
-        self.assertGreater(len(answer), 0)
+
+        with patch('rag_qa_chatbot.AutoTokenizer') as mock_tokenizer_cls, \
+             patch('rag_qa_chatbot.AutoModelForCausalLM'), \
+             patch('rag_qa_chatbot.pipeline') as mock_pipeline:
+
+            class DummyTokenizer:
+                eos_token_id = 0
+                pad_token = None
+                def __call__(self, *args, **kwargs):
+                    return Mock(input_ids=np.array([[1, 2, 3, 4]]))
+
+            mock_tokenizer_cls.from_pretrained.return_value = DummyTokenizer()
+
+            def gen(prompt, **kwargs):
+                return [{'generated_text': prompt + ' モック回答'}]
+
+            mock_pipeline.return_value = gen
+
+            chatbot = QAChatbot(kb_manager)
+
+            # 質問と回答
+            question = "経費精算について教えてください"
+            answer = chatbot.answer(question)
+
+            # 結果検証
+            self.assertIsInstance(answer, str)
+            self.assertGreater(len(answer), 0)
 
 
 def run_performance_test():
