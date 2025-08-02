@@ -95,8 +95,8 @@ def run_demo():
         with patch('rag_qa_chatbot.AutoTokenizer'), \
              patch('rag_qa_chatbot.AutoModelForCausalLM'), \
              patch('rag_qa_chatbot.pipeline'):
-            
-            chatbot = QAChatbot(kb_manager)
+
+            chatbot = QAChatbot(kb_manager, company_name="株式会社デモ")
             chatbot.generator = None  # シンプル回答を使用
             
             print("\n✨ デモンストレーション開始\n")

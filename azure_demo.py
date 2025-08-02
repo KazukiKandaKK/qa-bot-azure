@@ -25,10 +25,10 @@ def run_azure_demo_with_mock():
     print("📚 ナレッジベースを構築中...")
     kb_manager = KnowledgeBaseManager()
     kb_manager.build_index(documents)
-    
+
     # Azure チャットボット初期化（設定なしでフォールバック）
     print("\n🤖 Azure チャットボットを初期化中...")
-    chatbot = QAChatbotAzure(knowledge_base=kb_manager)
+    chatbot = QAChatbotAzure(knowledge_base=kb_manager, company_name="株式会社デモ")
     
     # デモ質問
     questions = [
@@ -70,7 +70,8 @@ def show_azure_setup_example():
     print("    azure_endpoint='https://your-openai-resource.openai.azure.com/',")
     print("    api_key='your-api-key',")
     print("    deployment_name='gpt-35-turbo',  # または 'gpt-4'")
-    print("    api_version='2024-02-15-preview'")
+    print("    api_version='2024-02-15-preview',")
+    print("    company_name='your-company'")
     print(")")
     print()
     print("# 質問と回答")

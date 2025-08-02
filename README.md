@@ -133,7 +133,7 @@ kb_manager = KnowledgeBaseManager()
 kb_manager.build_index(documents)
 
 # 3. チャットボット初期化
-chatbot = QAChatbot(kb_manager)
+chatbot = QAChatbot(kb_manager, company_name="株式会社AIシステム")
 
 # 4. 質問と回答
 answer = chatbot.answer("経費精算の上限はいくらですか？")
@@ -154,7 +154,8 @@ chatbot = QAChatbotAzure(
     knowledge_base=kb_manager,
     azure_endpoint='your-endpoint',
     api_key='your-key',
-    deployment_name='gpt-35-turbo'
+    deployment_name='gpt-35-turbo',
+    company_name='株式会社AIシステム'
 )
 
 # 質問と回答
@@ -243,7 +244,7 @@ kb_manager = KnowledgeBaseManager(
 # 接続テスト実行
 python -c "
 from rag_qa_chatbot_azure import QAChatbotAzure
-chatbot = QAChatbotAzure(None)
+chatbot = QAChatbotAzure(None, company_name='株式会社AIシステム')
 chatbot.test_connection()
 "
 ```

@@ -71,27 +71,29 @@ class KnowledgeBaseManager:
         faiss.normalize_L2(query_embedding)
         
         scores, indices = self.index.search(query_embedding, top_k)
-        
+
         relevant_chunks = []
-        for idx in indices[0]:
+        for idx in indices[0][:top_k]:
             if idx < len(self.chunks):
                 relevant_chunks.append(self.chunks[idx])
-        
+
         return relevant_chunks
 
 
 class QAChatbotAzure:
     """Azure OpenAIを使用したQAチャットボット"""
     
-    def __init__(self, 
+    def __init__(self,
                  knowledge_base: KnowledgeBaseManager,
                  azure_endpoint: Optional[str] = None,
                  api_key: Optional[str] = None,
                  api_version: str = "2024-02-15-preview",
-                 deployment_name: str = "gpt-35-turbo"):
-        
+                 deployment_name: str = "gpt-35-turbo",
+                 company_name: str = "株式会社○○"):
+
         self.knowledge_base = knowledge_base
         self.deployment_name = deployment_name
+        self.company_name = company_name
         
         # Azure OpenAI設定
         self.azure_endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -121,8 +123,8 @@ class QAChatbotAzure:
     def _build_prompt(self, context: List[str], question: str) -> str:
         """プロンプトを構築"""
         context_text = "\n".join(context) if context else "関連する情報が見つかりませんでした。"
-        
-        prompt = f"""あなたは、株式会社○○の社内情報を的確に教える、親切なAIアシスタントです。
+
+        prompt = f"""あなたは、{self.company_name}の社内情報を的確に教える、親切なAIアシスタントです。
 
 以下の社内情報を参考にして、質問に答えてください。
 ---
@@ -224,7 +226,8 @@ def setup_azure_config():
     print("       knowledge_base=kb_manager,")
     print("       azure_endpoint='https://your-resource.openai.azure.com/',")
     print("       api_key='your-api-key',")
-    print("       deployment_name='your-deployment-name'")
+    print("       deployment_name='your-deployment-name',")
+    print("       company_name='your-company'")
     print("   )")
     
     print("\n📝 必要な情報:")
@@ -313,7 +316,8 @@ if __name__ == "__main__":
             knowledge_base=kb_manager,
             # azure_endpoint="https://your-resource.openai.azure.com/",
             # api_key="your-api-key",
-            deployment_name="gpt-35-turbo"  # または "gpt-4"
+            deployment_name="gpt-35-turbo",  # または "gpt-4"
+            company_name="株式会社デモ"
         )
         
         # 接続テスト

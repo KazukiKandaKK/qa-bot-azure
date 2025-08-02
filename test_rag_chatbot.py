@@ -97,10 +97,12 @@ class TestQAChatbot(unittest.TestCase):
         """プロンプト構築のテスト"""
         context = ["経費精算の上限は50,000円です。", "申請は月末までに行ってください。"]
         question = "経費精算の上限はいくらですか？"
-        
+
+        # 会社名をカスタマイズしてプロンプトに反映されることを確認
+        self.chatbot.company_name = "株式会社テスト"
         prompt = self.chatbot._build_prompt(context, question)
-        
-        self.assertIn("株式会社○○", prompt)
+
+        self.assertIn("株式会社テスト", prompt)
         self.assertIn(question, prompt)
         self.assertIn(context[0], prompt)
         self.assertIn(context[1], prompt)
