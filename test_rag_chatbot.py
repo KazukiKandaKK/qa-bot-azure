@@ -38,6 +38,23 @@ class TestKnowledgeBaseManager(unittest.TestCase):
         for chunk in chunks:
             self.assertIsInstance(chunk, str)
             self.assertGreater(len(chunk), 0)
+
+    def test_chunk_overlap(self):
+        """チャンク間のオーバーラップを検証"""
+        self.kb_manager.chunk_size = 25
+        self.kb_manager.overlap = 5
+        document = (
+            "a" * 15 + "。" +
+            "b" * 15 + "。" +
+            "c" * 15 + "。"
+        )
+        chunks = self.kb_manager._split_document(document)
+        self.assertGreater(len(chunks), 1)
+        for i in range(len(chunks) - 1):
+            self.assertEqual(
+                chunks[i][-self.kb_manager.overlap:],
+                chunks[i + 1][:self.kb_manager.overlap]
+            )
     
     @patch('rag_qa_chatbot.faiss')
     def test_build_index(self, mock_faiss):
