@@ -1,11 +1,13 @@
 # RAG型社内QAチャットボット
 
+👉 [English README available](README_en.md)
+
 RAG (Retrieval-Augmented Generation) アーキテクチャを使用した社内ドキュメント検索・回答システムです。社内の文書を知識ベースとして、従業員からの質問に自動で回答します。
 
 ## 🌟 特徴
 
 - **RAGアーキテクチャ**: 検索と生成を組み合わせた高精度な回答システム
-- **多様なLLM対応**: Hugging Face Transformers、Azure OpenAI API対応
+- **多様なLLM対応**: Hugging Face Transformers、Azure OpenAI API、AWS Bedrock に対応
 - **高速検索**: FAISS による効率的なベクトル検索
 - **日本語対応**: 日本語の社内文書に最適化
 - **簡単セットアップ**: 軽量で導入しやすい設計
@@ -30,6 +32,7 @@ graph LR
 
 ```
 ├── README.md                    # このファイル
+├── README_en.md                 # 英語版README
 ├── .gitignore                   # Git除外設定
 ├── requirements.txt             # 基本版依存関係
 ├── requirements_azure.txt       # Azure版依存関係
@@ -86,6 +89,21 @@ export AZURE_OPENAI_API_KEY='your-api-key'
 python rag_qa_chatbot_azure.py
 ```
 
+### 4. AWS Bedrock版実行
+
+```bash
+# boto3インストール（未インストールの場合）
+pip install boto3
+
+# 必要な環境変数を設定（AWS CLI設定済みなら不要）
+export AWS_ACCESS_KEY_ID='your-access-key'
+export AWS_SECRET_ACCESS_KEY='your-secret-key'
+export AWS_REGION='us-east-1'
+
+# AWS版実行
+python rag_qa_chatbot.py --provider aws --model_id amazon.titan-text-lite-v1
+```
+
 ## ⚙️ 設定方法
 
 ### 基本版設定
@@ -112,6 +130,24 @@ chatbot = QAChatbotAzure(
     azure_endpoint='https://your-resource.openai.azure.com/',
     api_key='your-api-key',
     deployment_name='gpt-35-turbo'
+)
+```
+
+### AWS Bedrock版設定
+
+AWS CLIで認証情報を設定済みであれば追加設定は不要です。プログラム内で明示的に指定する場合：
+
+```python
+from rag_qa_chatbot import KnowledgeBaseManager, QAChatbot
+
+kb_manager = KnowledgeBaseManager()
+kb_manager.build_index(documents)
+
+chatbot = QAChatbot(
+    kb_manager,
+    provider="aws",
+    region_name="us-east-1",
+    model_id="amazon.titan-text-lite-v1"
 )
 ```
 
