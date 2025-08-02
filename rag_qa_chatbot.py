@@ -24,14 +24,17 @@ class KnowledgeBaseManager:
         
         chunks = []
         current_chunk = ""
-        
+
         for sentence in sentences:
             if len(current_chunk) + len(sentence) <= self.chunk_size:
                 current_chunk += sentence + "。"
             else:
                 if current_chunk:
                     chunks.append(current_chunk.strip())
-                current_chunk = sentence + "。"
+                    overlap_text = current_chunk[-self.overlap:] if self.overlap < len(current_chunk) else current_chunk
+                else:
+                    overlap_text = ""
+                current_chunk = overlap_text + sentence + "。"
         
         if current_chunk:
             chunks.append(current_chunk.strip())
@@ -69,11 +72,12 @@ class KnowledgeBaseManager:
         query_embedding = self.embedding_model.encode([query], convert_to_tensor=False)
         query_embedding = np.array(query_embedding).astype('float32')
         faiss.normalize_L2(query_embedding)
-        
+
         scores, indices = self.index.search(query_embedding, top_k)
-        
+        indices = indices[0][:top_k]
+
         relevant_chunks = []
-        for idx in indices[0]:
+        for idx in indices:
             if idx < len(self.chunks):
                 relevant_chunks.append(self.chunks[idx])
         
